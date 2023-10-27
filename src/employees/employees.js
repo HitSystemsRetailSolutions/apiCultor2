@@ -18,7 +18,7 @@ const sqlConfig = {
 
 
 async function synchronize_Employees() {
-    const fetch = await import("node-fetch"); // Use dynamic import
+    const nfetch = await import("node-fetch"); // Use dynamic import
 
     // Create Connection Pool    
     let pool = new ConnectionPool(sqlConfig);
@@ -41,7 +41,7 @@ async function synchronize_Employees() {
     for (const row of result.recordset) {
         console.log(row.Nom);
         // Get Employees from API
-        let response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${apiConfig.companyID})/employees?$filter=number eq '${row.Codi}'`, {
+        let response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${process.env.companyID})/employees?$filter=number eq '${row.Codi}'`, {
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + token,
@@ -55,8 +55,8 @@ async function synchronize_Employees() {
             const employees = await response.json();
 
             if (employees.value.length === 0) {
-                console.log('If employees Does Not Exist, Create New employees');
-                response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${apiConfig.companyID})/employees`, {
+                //console.log('If employees Does Not Exist, Create New employees');
+                response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${process.env.companyID})/employees`, {
                     method: 'POST',
                     headers: {
                         'Authorization': 'Bearer ' + token,
@@ -70,13 +70,13 @@ async function synchronize_Employees() {
                     }),
                 });
                 const responseJson = await response.json();
-                console.log(responseJson);
+                //console.log(responseJson);
             }else{
-                console.log('If employees Exists, Update employees ' + employees.value[0].id);
+                //console.log('If employees Exists, Update employees ' + employees.value[0].id);
 
                 let ifMatch = employees.value[0]["@odata.etag"];
 
-                response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${apiConfig.companyID})/employees(${employees.value[0].id})`, {
+                response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${process.env.companyID})/employees(${employees.value[0].id})`, {
                     method: 'PATCH',
                     headers: {
                         'Authorization': 'Bearer ' + token,
@@ -91,7 +91,7 @@ async function synchronize_Employees() {
                     }),
                 });
                 const responseJson = await response.json();
-                console.log(responseJson);
+                //console.log(responseJson);
             }
         } else {
             console.error('Error communicating with API', await response.text());

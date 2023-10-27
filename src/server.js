@@ -6,10 +6,11 @@ const synchronize_Employees = require("./employees/employees.js"); // Import the
 
 app.get("/getEmployees", async (req, res) => {
   try {
-    const token = await obtainToken(); // Call the obtainToken function
+    /*const token = await obtainToken(); // Call the obtainToken function
     console.log(token); // Log the obtained token
-    res.send(`Token: ${token}`); // Send the token as a response
-    //await synchronize_Employees();
+    res.send(`Token: ${token}`); // Send the token as a response*/
+    res.send("SINCRONIZANDO EMPLEADOS.."); 
+    await synchronize_Employees();
 
   } catch (error) {
     console.error(error);
