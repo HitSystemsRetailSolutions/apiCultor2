@@ -1,8 +1,8 @@
-import fetch from "node-fetch";
+/*import fetch from "node-fetch";
 import { config } from "dotenv";
 import pkg from "mssql";
 const { ConnectionPool } = pkg;
-import { URLSearchParams } from "url";
+import { URLSearchParams } from "url";*/
 
 const sqlConfig = {
     user: process.env.user,

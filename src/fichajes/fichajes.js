@@ -16,7 +16,7 @@ const sqlConfig = {
         },
     };
 
-async function synchronize_Employees() {
+async function synchronize_CdpDadesFichador() {
     const nfetch = await import("node-fetch"); // Use dynamic import
 
     // Create Connection Pool    
@@ -26,7 +26,7 @@ async function synchronize_Employees() {
     // Query SQL Server Table
     let result;
     try {
-        result = await pool.request().query(`SELECT cast(Codi as nvarchar) Codi, left(Nom, 30) Nom from dependentes order by nom`);
+        result = await pool.request().query(`select idr, tmst, accio, usuari, isnull(editor, '') editor, isnull(historial, '') historial, isnull(lloc, '') lloc, isnull(comentari, '') comentari, id from cdpDadesFichador where year(tmst)=2023 and month(tmst)=11 and day(tmst)=7 order by tmst`);
     } catch (err) {
         console.error('Error querying SQL Server', err);
         pool.close();
@@ -38,9 +38,9 @@ async function synchronize_Employees() {
 
     // Loop Through Each Record in SQL Table
     for (const row of result.recordset) {
-        console.log(row.Nom);
-        // Get Employees from API
-        let response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${process.env.companyID})/employees?$filter=number eq '${row.Codi}'`, {
+        console.log(row.idr);
+        // Get CdpDadesFichador from API
+        let response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${process.env.companyID})/CdpDadesFichador?$filter=idr eq '${row.idr}'`, {
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + token,
@@ -48,34 +48,39 @@ async function synchronize_Employees() {
             },
         });
 
-        // If Employees Does Not Exist, Create New Employees
+        // If CdpDadesFichador Does Not Exist, Create New CdpDadesFichador
         if (response.status === 404) {
         } else if (response.ok) {
-            const employees = await response.json();
+            const cdpDadesFichador = await response.json();
 
-            if (employees.value.length === 0) {
-                //console.log('If employees Does Not Exist, Create New employees');
-                response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${process.env.companyID})/employees`, {
+            if (cdpDadesFichador.value.length === 0) {
+                //console.log('If cdpDadesFichador Does Not Exist, Create New cdpDadesFichador');
+                response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${process.env.companyID})/CdpDadesFichador`, {
                     method: 'POST',
                     headers: {
                         'Authorization': 'Bearer ' + token,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        number: row.Codi ,
-                        givenName: row.Nom,
-                        middleName: "",
-                        surname: row.Nom,                        
+                        idr: row.idr ,
+                        tmst: row.tmst,
+                        accio: row.accio,
+                        usuari: row.usuari,
+                        editor: row.editor,
+                        historial: row.historial, 
+                        lloc: row.lloc, 
+                        comentari: row.comentari, 
+                        id: row.id,
                     }),
                 });
                 const responseJson = await response.json();
                 //console.log(responseJson);
             }else{
-                //console.log('If employees Exists, Update employees ' + employees.value[0].id);
+                //console.log('If cdpDadesFichador Exists, Update cdpDadesFichador');
 
-                let ifMatch = employees.value[0]["@odata.etag"];
+                let ifMatch = cdpDadesFichador.value[0]["@odata.etag"];
 
-                response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${process.env.companyID})/employees(${employees.value[0].id})`, {
+                response = await fetch(`${process.env.baseURL}/v2.0/${process.env.tenant}/production/api/v2.0/companies(${process.env.companyID})/cdpDadesFichador(${cdpDadesFichador.value[0].idr})`, {
                     method: 'PATCH',
                     headers: {
                         'Authorization': 'Bearer ' + token,
@@ -83,10 +88,15 @@ async function synchronize_Employees() {
                         'if-Match': ifMatch,
                     },
                     body: JSON.stringify({
-                        givenName: row.Nom,
-                        middleName: "",
-                        surname: row.Nom,
-                        // Update additional fields as necessary...
+                        idr: row.idr ,
+                        tmst: row.tmst,
+                        accio: row.accio,
+                        usuari: row.usuari,
+                        editor: row.editor,
+                        historial: row.historial, 
+                        lloc: row.lloc, 
+                        comentari: row.comentari, 
+                        id: row.id,
                     }),
                 });
                 const responseJson = await response.json();
@@ -100,4 +110,4 @@ async function synchronize_Employees() {
     pool.close();
 }
 
-module.exports = synchronize_Employees;
+module.exports = synchronize_CdpDadesFichador;
